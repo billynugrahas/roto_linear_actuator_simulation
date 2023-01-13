@@ -1,0 +1,217 @@
+<?xml version="1.0" ?>
+<robot name="aka_robot" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find needle_simulation)/urdf/common_properties.xacro"/>
+
+  <xacro:property name="base_width" value="0.1" /> <!-- Base -->
+  <xacro:property name="base_length" value="0.5" /> <!-- Base -->
+  <xacro:property name="roto_linear_length" value="1" /> <!-- Motor -->
+  <xacro:property name="motor_radius" value="0.15" /> <!-- Motor -->
+  <xacro:property name="motor_length" value="0.1" /> <!-- Motor -->
+  <xacro:property name="needle_radius" value="0.01" /> 
+  <xacro:property name="needle_length" value="0.3" /> 
+  <xacro:property name="needle_mass" value="0.001" /> 
+  <xacro:property name="base_mass" value="10" /> 
+
+  <!-- ros_control plugin -->
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/needle_bot</robotNamespace>
+      <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
+    </plugin>
+  </gazebo>
+
+  <joint name="base_joint" type="fixed">
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+    <origin xyz="0.0 0.0 0" rpy="0 0 0"/>
+  </joint>
+  <link name="base_footprint"/>
+
+  <link name="base_link">
+    <visual>
+      <origin xyz="${roto_linear_length*1/3} 0 ${base_width/2}" rpy="0 0.0 0"/>
+      <geometry>
+        <box size="${roto_linear_length*4/3} ${base_length} ${base_width}"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+    <collision>
+      <origin xyz="${roto_linear_length*1/3} 0 ${base_width/2}" rpy="0 0.0 0"/>
+      <geometry>
+        <box size="${roto_linear_length*4/3} ${base_length} ${base_width}"/>
+      </geometry>
+      <material name="orange"/>
+    </collision>
+
+    <inertial>
+      <origin xyz="${roto_linear_length*1/3} 0 ${base_width/2}" rpy="0 0 0"/>
+      <mass value="${base_mass}"/>
+      <inertia
+	      ixx="${base_mass / 12.0 * (base_width*base_width + (roto_linear_length*4/3)*(roto_linear_length*4/3))}" ixy="0.0" ixz="0.0"
+	      iyy="${base_mass / 12.0 * (base_length*base_length + base_width*base_width)}" iyz="0.0"
+	      izz="${base_mass / 12.0 * (base_width*base_width + base_width*base_width)}"/>
+    </inertial>
+  </link>
+
+  <joint name="upper_base_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="upper_base_link"/>
+    <origin xyz="0.0 0.0 ${(base_length/2)+(base_width)}" rpy="0 0 0"/>
+  </joint>
+
+  <link name="upper_base_link">
+    <visual>
+      <origin xyz="-${base_width/2} 0 0.0" rpy="0 1.57 0"/>
+      <geometry>
+        <box size="${base_length} ${base_length} ${base_width}"/>
+      </geometry>
+      <material name="black"/>
+    </visual>
+
+    <!-- <collision>
+      <origin xyz="0 0 0.0" rpy="0 1.57 0"/>
+      <geometry>
+        <box size="${base_length} ${base_length} ${base_width}"/>
+      </geometry>
+    </collision> -->
+
+    <inertial>
+      <origin xyz="-${base_width/2} 0 0.0" rpy="0 1.57 0"/>
+      <mass value="8.2573504e-01"/>
+      <inertia ixx="2.2124416e-03" ixy="-1.2294101e-05" ixz="3.4938785e-05"
+               iyy="2.1193702e-03" iyz="-5.0120904e-06"
+               izz="2.0064271e-03" />
+    </inertial>
+  </link>
+
+
+  <joint name="prismatic_joint" type="prismatic">
+    <parent link="upper_base_link"/>
+    <child link="prismatic_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <limit effort="30" velocity="0.5" lower="0" upper="${roto_linear_length}" />
+    <axis xyz="1 0 0"/>
+  </joint>
+
+  <link name="prismatic_link">
+    <visual>
+      <origin xyz="${motor_length/2} 0 -${(base_length/2)-(base_width/4)}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${motor_length} ${motor_radius*2} ${base_width/2}"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+    <!-- <collision>
+      <origin xyz="0 0 0" rpy="0 1.57 0"/>
+      <geometry>
+        <cylinder length="0.1" radius="0.15"/>
+      </geometry>
+      <material name="dark"/>
+    </collision> -->
+
+    <inertial>
+      <origin xyz="${motor_length/2} 0 -${(base_length/2)-(base_width/4)}" />
+      <mass value="2.8498940e-02" />
+      <inertia ixx="1.1175580e-05" ixy="-4.2369783e-11" ixz="-5.9381719e-09"
+               iyy="1.1192413e-05" iyz="-1.4400107e-11"
+               izz="2.0712558e-05" />
+      </inertial>
+  </link>
+  <joint name="motor_joint" type="revolute">
+    <parent link="prismatic_link"/>
+    <child link="motor_link"/>
+    <limit effort="30" velocity="1.57079633" lower="-1.57079633" upper="1.57079633" />
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+  </joint>
+
+  <link name="motor_link">
+    <visual>
+      <origin xyz="${motor_length/2} 0 0" rpy="0 1.57 0"/>
+      <geometry>
+        <cylinder length="${motor_length}" radius="${motor_radius}"/>
+      </geometry>
+      <material name="orange"/>
+    </visual>
+
+    <!-- <collision>
+      <origin xyz="${motor_length/2} 0 0" rpy="0 1.57 0"/>
+      <geometry>
+        <cylinder length="${motor_length}" radius="${motor_radius}"/>
+      </geometry>
+    </collision> -->
+
+    <inertial>
+      <origin xyz="-${base_width/2} 0 0.0" rpy="0 1.57 0"/>
+      <mass value="2.8498940e-02" />
+      <inertia ixx="1.1175580e-05" ixy="-4.2369783e-11" ixz="-5.9381719e-09"
+               iyy="1.1192413e-05" iyz="-1.4400107e-11"
+               izz="2.0712558e-05" />
+      </inertial>
+  </link>
+
+  <!-- Needle Link -->
+  <joint name="needle_joint" type="fixed">
+    <parent link="motor_link"/>
+    <child link="needle_link"/>
+    <origin xyz="${motor_length} 0.0 0.0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="needle_link">
+    <collision>
+      <origin xyz="${needle_length/2} 0 0" rpy="0 1.57 0"/>
+      <geometry>
+        <cylinder length="${needle_length}" radius="${needle_radius}"/>
+      </geometry>
+    </collision>
+
+    <visual>
+      <origin xyz="${needle_length/2} 0 0" rpy="0 1.57 0"/>
+      <geometry>
+        <cylinder length="${needle_length}" radius="${needle_radius}"/>
+      </geometry>
+      <material name="dark"/>
+    </visual>
+
+    <inertial>
+      <origin xyz="${needle_length/2} 0 0" rpy="0 0 0"/>
+      <mass value="${needle_mass}"/>
+      <inertia
+	      ixx="${needle_mass / 12.0 * ((2*needle_radius)*(2*needle_radius) + needle_length*needle_length)}" ixy="0.0" ixz="0.0"
+	      iyy="${needle_mass / 12.0 * ((2*needle_radius)*(2*needle_radius) + needle_length*needle_length)}" iyz="0.0"
+	      izz="${needle_mass / 12.0 * ((2*needle_radius)*(2*needle_radius) + needle_length*needle_length)}"/>
+      </inertial>
+  </link>
+
+  <joint name="end_effector_joint" type="fixed">
+    <parent link="needle_link"/>
+    <child link="end_effector"/>
+    <origin xyz="${needle_length} 0.0 0.0" rpy="0 0 0"/>
+  </joint>
+
+  <link name="end_effector"/>
+
+  <transmission name="tran1">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="prismatic_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="prismatic_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="tran2">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="motor_joint">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="servo_motor">
+      <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+</robot>
