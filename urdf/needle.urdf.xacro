@@ -1,5 +1,6 @@
 <?xml version="1.0" ?>
-<robot name="aka_robot" xmlns:xacro="http://ros.org/wiki/xacro">
+
+<robot name="needle_bot" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:include filename="$(find needle_simulation)/urdf/common_properties.xacro"/>
 
   <xacro:property name="base_width" value="0.1" /> <!-- Base -->
@@ -19,7 +20,22 @@
       <robotSimType>gazebo_ros_control/DefaultRobotHWSim</robotSimType>
     </plugin>
   </gazebo>
-
+  <gazebo reference="base_link">
+    <material>Gazebo/Orange</material>
+  </gazebo>
+  <gazebo reference="upper_base_link">
+    <material>Gazebo/Black</material>
+  </gazebo>
+  <gazebo reference="prismatic_link">
+    <material>Gazebo/Yellow</material>
+  </gazebo>
+  <gazebo reference="motor_link">
+    <material>Gazebo/Orange</material>
+  </gazebo>
+  <gazebo reference="needle_link">
+    <material>Gazebo/Black</material>
+  </gazebo>
+  
   <joint name="base_joint" type="fixed">
     <parent link="base_footprint"/>
     <child link="base_link"/>
@@ -78,10 +94,11 @@
 
     <inertial>
       <origin xyz="-${base_width/2} 0 0.0" rpy="0 1.57 0"/>
-      <mass value="8.2573504e-01"/>
-      <inertia ixx="2.2124416e-03" ixy="-1.2294101e-05" ixz="3.4938785e-05"
-               iyy="2.1193702e-03" iyz="-5.0120904e-06"
-               izz="2.0064271e-03" />
+      <mass value="${base_mass}"/>
+      <inertia 
+	      ixx="${base_mass/ 12.0 * (base_width*base_width + base_length*base_length)}" ixy="0.0" ixz="0.0"
+	      iyy="${base_mass/ 12.0 * (base_length*base_length + base_width*base_width)}" iyz="0.0"
+	      izz="${base_mass/ 12.0 * (base_width*base_width + base_width*base_width)}"/>
     </inertial>
   </link>
 
@@ -90,15 +107,15 @@
     <parent link="upper_base_link"/>
     <child link="prismatic_link"/>
     <origin xyz="0 0 0" rpy="0 0 0"/>
-    <limit effort="30" velocity="0.5" lower="0" upper="${roto_linear_length}" />
+    <limit effort="30" velocity="0.1" lower="0" upper="${roto_linear_length}" />
     <axis xyz="1 0 0"/>
   </joint>
 
   <link name="prismatic_link">
     <visual>
-      <origin xyz="${motor_length/2} 0 -${(base_length/2)-(base_width/4)}" rpy="0 0 0"/>
+      <origin xyz="${motor_length/2} 0 -${(base_length/2)-((base_width*4/3)/2)}" rpy="0 0 0"/>
       <geometry>
-        <box size="${motor_length} ${motor_radius*2} ${base_width/2}"/>
+        <box size="${motor_length*4/5} ${motor_radius*2} ${base_width*4/3}"/>
       </geometry>
       <material name="orange"/>
     </visual>
@@ -119,10 +136,11 @@
                izz="2.0712558e-05" />
       </inertial>
   </link>
+
   <joint name="motor_joint" type="revolute">
     <parent link="prismatic_link"/>
     <child link="motor_link"/>
-    <limit effort="30" velocity="1.57079633" lower="-1.57079633" upper="1.57079633" />
+    <limit effort="30" velocity="0.1" lower="-1.57079633" upper="1.57079633" />
     <origin xyz="0 0 0" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
   </joint>

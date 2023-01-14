@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- Revolute-Revolute Manipulator -->
-<robot name="rrbot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+<robot name="needle_bot" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:include filename="$(find needle_simulation)/urdf/common_properties.xacro"/>
 
   <!-- Constants for robot dimensions -->
