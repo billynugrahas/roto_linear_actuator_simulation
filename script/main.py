@@ -64,6 +64,9 @@ sys.stdout = open(f'/home/billy/niagraha_ws/src/spring-mass-MPC/log/{log_index}_
 """ User settings: """
 show_animation = True
 store_results = True
+controlled = True
+# controlled = False
+
 
 """
 Get configured do-mpc modules:
@@ -140,9 +143,6 @@ plt.ion()
 """
 Run MPC main loop:
 """
-controlled = True
-# controlled = False
-
 for k in range(50):
 
     # breakpoint()
