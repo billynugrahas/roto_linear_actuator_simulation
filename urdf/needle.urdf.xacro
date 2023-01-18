@@ -117,7 +117,7 @@
       <geometry>
         <box size="${motor_length*4/5} ${motor_radius*2} ${base_width*4/3}"/>
       </geometry>
-      <material name="orange"/>
+      <material name="yellow"/>
     </visual>
 
     <!-- <collision>
